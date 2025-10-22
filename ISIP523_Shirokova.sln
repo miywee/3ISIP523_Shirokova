@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISIP523_Shirokova", "ISIP523_Shirokova\ISIP523_Shirokova.csproj", "{E725AD0F-5D97-4221-8011-B17F6261E61E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E725AD0F-5D97-4221-8011-B17F6261E61E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E725AD0F-5D97-4221-8011-B17F6261E61E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E725AD0F-5D97-4221-8011-B17F6261E61E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E725AD0F-5D97-4221-8011-B17F6261E61E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
