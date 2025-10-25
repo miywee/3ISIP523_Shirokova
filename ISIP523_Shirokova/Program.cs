@@ -108,5 +108,27 @@ public class Store
         Console.WriteLine("Товар не найден!");
     }
     
+    public void SellProduct(string code, int quantity)
+    {
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].code == code)
+            {
+                if (products[i].quantity >= quantity)
+                {
+                    products[i].quantity -= quantity;
+                    products[i].inStock = products[i].quantity > 0;
+                    Console.WriteLine("Продажа завершена!");
+                }
+                else
+                {
+                    Console.WriteLine("Недостаточно товара!");
+                }
+                return;
+            }
+        }
+        Console.WriteLine("Товар не найден!");
+    }
+    
     
 }
