@@ -73,4 +73,25 @@ public class Store
         Console.WriteLine("Товар добавлен!");
     }
     
+    public void RemoveProduct(string code)
+    {
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].code == code)
+            {
+                for (int j = i; j < productCount - 1; j++)
+                {
+                    products[j] = products[j + 1];
+                }
+
+                productCount--;
+                Console.WriteLine("Товар удален!");
+                return;
+            }
+        }
+
+        Console.WriteLine("Товар не найден!");
+    }
+    
+    
 }
