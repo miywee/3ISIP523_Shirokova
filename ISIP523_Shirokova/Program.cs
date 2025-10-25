@@ -130,5 +130,47 @@ public class Store
         Console.WriteLine("Товар не найден!");
     }
     
+    public void SearchByCode(string code)
+    {
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].code == code)
+            {
+                Console.WriteLine("Найден товар: " + products[i]);
+                return;
+            }
+        }
+        Console.WriteLine("Товар не найден!");
+    }
+    
+    public void SearchByName(string name)
+    {
+        Console.WriteLine("\nРезультаты поиска:");
+        bool found = false;
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].name.ToLower().Contains(name.ToLower()))
+            {
+                Console.WriteLine(products[i]);
+                found = true;
+            }
+        }
+        if (!found) Console.WriteLine("Товары не найдены!");
+    }
+
+    public void SearchByCategory(Category category)
+    {
+        Console.WriteLine("\nТовары в категории " + category + ":");
+        bool found = false;
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].category == category)
+            {
+                Console.WriteLine(products[i]);
+                found = true;
+            }
+        }
+        if (!found) Console.WriteLine("Товары не найдены!");
+    }
     
 }
