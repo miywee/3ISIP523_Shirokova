@@ -54,5 +54,13 @@ public class Store
         productCount++;
     }
     
+    public void ShowAllProducts()
+    {
+        Console.WriteLine("\nВсе товары:");
+        for (int i = 0; i < productCount; i++)
+        {
+            Console.WriteLine(products[i]);
+        }
+    }
     
 }
