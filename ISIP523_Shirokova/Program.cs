@@ -26,7 +26,7 @@ public class Product
         this.category = category;
     }
 
-    public string ToString()
+    public string Show()
     {
         return $"{code}, {name}, Цена: {price} руб, Количество: {quantity}, В наличии: {(inStock ? "Да" : "Нет")}, Категория: {category}";
     }
@@ -59,7 +59,7 @@ public class Store
         Console.WriteLine("\nВсе товары:");
         for (int i = 0; i < productCount; i++)
         {
-            Console.WriteLine(products[i]);
+            Console.WriteLine(products[i].Show());
         }
     }
     
@@ -136,7 +136,7 @@ public class Store
         {
             if (products[i].code == code)
             {
-                Console.WriteLine("Найден товар: " + products[i]);
+                Console.WriteLine("Найден товар: " + products[i].Show());
                 return;
             }
         }
@@ -151,7 +151,7 @@ public class Store
         {
             if (products[i].name.ToLower().Contains(name.ToLower()))
             {
-                Console.WriteLine(products[i]);
+                Console.WriteLine(products[i].Show());
                 found = true;
             }
         }
@@ -166,11 +166,83 @@ public class Store
         {
             if (products[i].category == category)
             {
-                Console.WriteLine(products[i]);
+                Console.WriteLine(products[i].Show());
                 found = true;
             }
         }
         if (!found) Console.WriteLine("Товары не найдены!");
     }
-    
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Store store = new Store();
+        while (true)
+        {
+            Console.WriteLine("\n1. Все товары");
+            Console.WriteLine("2. Добавить товар");
+            Console.WriteLine("3. Удалить товар");
+            Console.WriteLine("4. Заказать поставку");
+            Console.WriteLine("5. Продать товар");
+            Console.WriteLine("6. Поиск по коду");
+            Console.WriteLine("7. Поиск по названию");
+            Console.WriteLine("8. Поиск по категории");
+            Console.WriteLine("0. Выход");
+            Console.Write("Выберите: ");
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    store.ShowAllProducts();
+                    break;
+                case "2":
+                    Console.Write("Название: ");
+                    string name = Console.ReadLine();
+                    Console.Write("Цена: ");
+                    double price = double.Parse(Console.ReadLine());
+                    Console.Write("Количество: ");
+                    int quantity = int.Parse(Console.ReadLine());
+                    Console.Write("Категория (1-Одежда, 2-Еда, 3-Книги): ");
+                    Category category = (Category)int.Parse(Console.ReadLine());
+                    store.AddProduct(name, price, quantity, category);
+                    break;
+                case "3":
+                    Console.Write("Код товара: ");
+                    store.RemoveProduct(Console.ReadLine());
+                    break;
+                case "4":
+                    Console.Write("Код товара: ");
+                    string code1 = Console.ReadLine();
+                    Console.Write("Количество: ");
+                    int q1 = int.Parse(Console.ReadLine());
+                    store.OrderSupply(code1, q1);
+                    break;
+                case "5":
+                    Console.Write("Код товара: ");
+                    string code2 = Console.ReadLine();
+                    Console.Write("Количество: ");
+                    int q2 = int.Parse(Console.ReadLine());
+                    store.SellProduct(code2, q2);
+                    break;
+                case "6":
+                    Console.Write("Код товара: ");
+                    store.SearchByCode(Console.ReadLine());
+                    break;
+                case "7":
+                    Console.Write("Название: ");
+                    store.SearchByName(Console.ReadLine());
+                    break;
+                case "8":
+                    Console.Write("Категория (1-Одежда, 2-Еда, 3-Книги): ");
+                    Category searchCat = (Category)int.Parse(Console.ReadLine());
+                    store.SearchByCategory(searchCat);
+                    break;
+                case "0":
+                    return;
+            }
+        }
+    }
 }
