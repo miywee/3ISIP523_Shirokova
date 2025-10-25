@@ -26,7 +26,7 @@ public class Product
         this.category = category;
     }
 
-    public override string ToString()
+    public string ToString()
     {
         return $"{code}, {name}, Цена: {price} руб, Количество: {quantity}, В наличии: {(inStock ? "Да" : "Нет")}, Категория: {category}";
     }
@@ -46,7 +46,13 @@ public class Store
         AddTestProduct("Молоко", 70, 20, Category.Food);
         AddTestProduct("Фэнтези", 450, 10, Category.Books);
     }
-    
+    private void AddTestProduct(string name, double price, int quantity, Category category)
+    {
+        string code = nextProductId.ToString();
+        nextProductId++;
+        products[productCount] = new Product(code, name, price, quantity, category);
+        productCount++;
+    }
     
     
 }
