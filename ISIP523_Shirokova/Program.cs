@@ -63,4 +63,14 @@ public class Store
         }
     }
     
+    public void AddProduct(string name, double price, int quantity, Category category)
+    {
+        string code = nextProductId.ToString();
+        nextProductId++;
+        
+        products[productCount] = new Product(code, name, price, quantity, category);
+        productCount++;
+        Console.WriteLine("Товар добавлен!");
+    }
+    
 }
