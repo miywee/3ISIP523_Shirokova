@@ -93,5 +93,20 @@ public class Store
         Console.WriteLine("Товар не найден!");
     }
     
+    public void OrderSupply(string code, int quantity)
+    {
+        for (int i = 0; i < productCount; i++)
+        {
+            if (products[i].code == code)
+            {
+                products[i].quantity += quantity;
+                products[i].inStock = true;
+                Console.WriteLine("Поставка добавлена!");
+                return;
+            }
+        }
+        Console.WriteLine("Товар не найден!");
+    }
+    
     
 }
