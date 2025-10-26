@@ -129,4 +129,76 @@ class TextAnalyzer
         if (count == 0 && currentText != "") count = 1;
         Console.WriteLine($"Предложений в тексте: {count}");
     }
+    
+    static void Letters()
+    {
+        int vowels = 0;
+        int consonants = 0;
+        string vowelLetters = "аеёиоуыэюя";
+        
+        for (int i = 0; i < currentText.Length; i++)
+        {
+            char c = char.ToLower(currentText[i]);
+            if (char.IsLetter(c))
+            {
+                if (vowelLetters.Contains(c.ToString()))
+                {
+                    vowels++;
+                }
+                else
+                {
+                    consonants++;
+                }
+            }
+        }
+        Console.WriteLine($"Гласные: {vowels}, Согласные: {consonants}");
+    }
+    
+    static void Stat()
+    {
+        int[] counts = new int[33];
+        int totalLetters = 0;
+        for (int i = 0; i < currentText.Length; i++)
+        {
+            char c = char.ToLower(currentText[i]);
+        
+            if (c >= 'а' && c <= 'я')
+            {
+                counts[c - 'а']++;
+                totalLetters++;
+            }
+        }
+    
+        Console.WriteLine("Частота букв:");
+    
+        for (int top = 0; top < 5; top++)  
+        {
+            int maxCount = 0;
+            char maxChar = ' ';
+        
+            for (int i = 0; i < counts.Length; i++)
+            {
+                if (counts[i] > maxCount)
+                {
+                    maxCount = counts[i];
+                    maxChar = (char)('а' + i);
+                }
+            }
+            if (maxCount > 0)
+            {
+                double percent = (double)maxCount / totalLetters * 100;
+                Console.WriteLine(percent);
+            
+                for (int i = 0; i < counts.Length; i++)
+                {
+                    if (counts[i] == maxCount)
+                    {
+                        counts[i] = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        Console.WriteLine();
+    }
 }
