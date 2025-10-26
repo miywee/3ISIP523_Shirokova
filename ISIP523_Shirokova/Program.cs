@@ -83,4 +83,35 @@ class TextAnalyzer
     
         Console.WriteLine($"Слов в тексте: {count}");
     }
+
+    static void ShortestWord()
+    {
+        string[] words = currentText.Split(' ');
+        string shortest = "";
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i] != "")
+            {
+                if (shortest == "" && words[i].Length < shortest.Length)
+                {
+                    shortest = words[i];
+                }
+            }
+        }
+        Console.WriteLine($"Самое короткое слово: '{shortest}' ({shortest.Length} букв)\n");
+    }
+
+    static void LongestWord()
+    {
+        string[] words = currentText.Split(' ');
+        string longest = "";
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i] != "" && words[i].Length > longest.Length)
+            {
+                longest = words[i];
+            }
+        }
+        Console.WriteLine($"Самое длинное слово: '{longest}' ({longest.Length} букв)\n");
+    }
 }
