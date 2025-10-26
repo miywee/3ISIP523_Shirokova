@@ -27,22 +27,31 @@ class TextAnalyzer
             switch (choice)
             {
                 case "1":
+                    InputText();
                     break;
                 case "2":
+                    WordCount();
                     break;
                 case "3":
+                    ShortestWord();
                     break;
                 case "4":
+                    LongestWord();
                     break;
                 case "5":
+                    SentenceCount();
                     break;
                 case "6":
+                    Letters();
                     break;
                 case "7":
+                    Stat();
                     break;
                 case "8":
+                    Analysis();
                     break;
                 case "9":
+                    Count();
                     break;
                 case "0":
                     Console.WriteLine("Выход");
@@ -55,8 +64,15 @@ class TextAnalyzer
     }
     static void InputText()
     {
-        Console.Write("Введите текст (минимум 100 символов): ");
-        string text = Console.ReadLine();
+        Console.Write("Введите текст (минимум 100 символов): \n");
+        Console.WriteLine("Для завершения ввода введите пустую строку:");
+        string text = "";
+        string line;
+
+        while ((line = Console.ReadLine()) != "")
+        {
+            text += line + " ";
+        }
         
         if (text.Length < 100)
         {
@@ -86,15 +102,17 @@ class TextAnalyzer
 
     static void ShortestWord()
     {
-        string[] words = currentText.Split(' ');
+        string[] words = currentText.Split(' ',',', '.', '!', '?', ';', ':');
         string shortest = "";
+        bool found = false;
         for (int i = 0; i < words.Length; i++)
         {
-            if (words[i] != "")
+            if (words[i].Length > 0)
             {
-                if (shortest == "" && words[i].Length < shortest.Length)
+                if (!found || words[i].Length < shortest.Length)
                 {
                     shortest = words[i];
+                    found = true;
                 }
             }
         }
@@ -103,7 +121,7 @@ class TextAnalyzer
 
     static void LongestWord()
     {
-        string[] words = currentText.Split(' ');
+        string[] words = currentText.Split(' ',',', '.', '!', '?', ';', ':');
         string longest = "";
         for (int i = 0; i < words.Length; i++)
         {
@@ -187,7 +205,7 @@ class TextAnalyzer
             if (maxCount > 0)
             {
                 double percent = (double)maxCount / totalLetters * 100;
-                Console.WriteLine(percent);
+                Console.WriteLine($"{percent:F1}%");
             
                 for (int i = 0; i < counts.Length; i++)
                 {
@@ -200,5 +218,23 @@ class TextAnalyzer
             }
         }
         Console.WriteLine();
+    }
+
+    private static void Analysis()
+    {
+        Console.WriteLine("ПОЛНЫЙ АНАЛИЗ");
+        
+        WordCount();
+        ShortestWord();
+        LongestWord();
+        SentenceCount();
+        Letters();
+        Stat();
+        analysisCount++;
+        Console.WriteLine("Анализ завершен!");
+    }
+    static void Count()
+    {
+        Console.WriteLine($"Выполнено анализов: {analysisCount}");
     }
 }
