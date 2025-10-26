@@ -7,7 +7,7 @@ class TextAnalyzer
 
     static void Main(string[] args)
     {
-        Console.WriteLine("Анализ текста\n");
+        Console.WriteLine("Анализ текста");
         while (true)
         {
             Console.WriteLine("МЕНЮ:");
@@ -60,12 +60,12 @@ class TextAnalyzer
         
         if (text.Length < 100)
         {
-            Console.WriteLine("Ошибка, минимум 100 символов\n");
+            Console.WriteLine("Ошибка, минимум 100 символов");
             return;
         }
         
         currentText = text;
-        Console.WriteLine("Текст сохранен!\n");
+        Console.WriteLine("Текст сохранен!");
     }
     
     static void WordCount()
@@ -98,7 +98,7 @@ class TextAnalyzer
                 }
             }
         }
-        Console.WriteLine($"Самое короткое слово: '{shortest}' ({shortest.Length} букв)\n");
+        Console.WriteLine($"Самое короткое слово: '{shortest}' ({shortest.Length} букв)");
     }
 
     static void LongestWord()
@@ -112,6 +112,21 @@ class TextAnalyzer
                 longest = words[i];
             }
         }
-        Console.WriteLine($"Самое длинное слово: '{longest}' ({longest.Length} букв)\n");
+        Console.WriteLine($"Самое длинное слово: '{longest}' ({longest.Length} букв)");
+    }
+    
+    static void SentenceCount()
+    {
+        int count = 0;
+        for (int i = 0; i < currentText.Length; i++)
+        {
+            char c = currentText[i];
+            if (c == '.' || c == '!' || c == '?')
+            {
+                count++;
+            }
+        }
+        if (count == 0 && currentText != "") count = 1;
+        Console.WriteLine($"Предложений в тексте: {count}");
     }
 }
