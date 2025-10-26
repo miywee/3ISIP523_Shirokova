@@ -67,4 +67,20 @@ class TextAnalyzer
         currentText = text;
         Console.WriteLine("Текст сохранен!\n");
     }
+    
+    static void WordCount()
+    {
+        string[] words = currentText.Split(' ');
+        int count = 0;
+    
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i] != "")
+            {
+                count++;
+            }
+        }
+    
+        Console.WriteLine($"Слов в тексте: {count}");
+    }
 }
