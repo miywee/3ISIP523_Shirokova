@@ -56,7 +56,7 @@ public class Store
     
     public void ShowAllProducts()
     {
-        Console.WriteLine("\nВсе товары:");
+        Console.WriteLine("Все товары:");
         for (int i = 0; i < productCount; i++)
         {
             Console.WriteLine(products[i].Show());
