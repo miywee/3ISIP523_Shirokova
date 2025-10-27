@@ -237,4 +237,6 @@ class TextAnalyzer
     {
         Console.WriteLine($"Выполнено анализов: {analysisCount}");
     }
+    
+    
 }
