@@ -514,10 +514,14 @@ namespace TextRoguelike
             
             switch (choice)
             {
-                case 0: return new Goblin(this);
-                case 1: return new Skeleton(this);
-                case 2: return new Mage(this);
-                default: return new Goblin(this);
+                case 0: 
+                    return new Goblin(this);
+                case 1: 
+                    return new Skeleton(this);
+                case 2: 
+                    return new Mage(this);
+                default: 
+                    return new Goblin(this);
             }
         }
         
