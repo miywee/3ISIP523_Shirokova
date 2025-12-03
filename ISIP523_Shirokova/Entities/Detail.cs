@@ -10,6 +10,8 @@ public partial class Detail
     public string Name { get; set; } = null!;
 
     public int Price { get; set; }
+    
+    
 
     public virtual ICollection<GarageDetail> GarageDetails { get; set; } = new List<GarageDetail>();
 }

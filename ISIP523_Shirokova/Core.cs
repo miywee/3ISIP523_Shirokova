@@ -1,6 +1,10 @@
+using ISIP523_Shirokova.Context;
+using ISIP523_Shirokova.Entities;
+
 namespace ISIP523_Shirokova;
 
 public class Core
-{
-    public static pr7.2Context Context = new pr7.2Context ();
+{ 
+    public static MyDbContext Context = new MyDbContext();
+    
 }
