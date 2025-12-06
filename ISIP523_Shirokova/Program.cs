@@ -15,7 +15,7 @@ namespace AutoServiceGame
             
             List<Detail> details = Core.Context.Details.ToList();
             List<Garage> garages = Core.Context.Garages.ToList();
-            List<DetailGarage> garageDetails = Core.Context.GarageDetails.ToList();
+            List<GarageDetail> garageDetails = Core.Context.GarageDetails.ToList();
             
             if (garages.Count == 0)
             {
@@ -28,17 +28,15 @@ namespace AutoServiceGame
             
             Dictionary<int, int> stock = new Dictionary<int, int>();
             
-            foreach (var gd in garageDetails.Where(gd => gd.GarageID == myGarage.ID))
+            foreach (var gd in garageDetails.Where(gd => gd.GarageId == myGarage.Id))
             {
-                // Каждая запись в GarageDetails - это одна деталь
-                // Чтобы хранить количество, считаем сколько раз встречается каждая деталь
-                if (stock.ContainsKey(gd.DetailsID))
+                if (stock.ContainsKey(gd.DetailsId))
                 {
-                    stock[gd.DetailsID]++;
+                    stock[gd.DetailsId]++;
                 }
                 else
                 {
-                    stock[gd.DetailsID] = 1;
+                    stock[gd.DetailsId] = 1;
                 }
             }
             
@@ -48,22 +46,22 @@ namespace AutoServiceGame
             while (running)
             {
                 Console.Clear();
-                Console.WriteLine($"💰 БЮДЖЕТ: {myGarage.Budget} руб.");
-                Console.WriteLine($"🏠 Гараж: {myGarage.Name}");
-                Console.WriteLine("\n📦 СКЛАД:");
+                Console.WriteLine($"бюджет: {myGarage.Budget} руб.");
+                Console.WriteLine($"гараж: {myGarage.Name}");
+                Console.WriteLine("\nсклад:");
                 
                 if (stock.Count == 0)
                 {
-                    Console.WriteLine("   Пусто!");
+                    Console.WriteLine("Пусто!");
                 }
                 else
                 {
                     foreach (var kvp in stock)
                     {
-                        var detail = details.FirstOrDefault(d => d.ID == kvp.Key);
+                        var detail = details.FirstOrDefault(d => d.Id == kvp.Key);
                         if (detail != null)
                         {
-                            Console.WriteLine($"   {detail.Name}: {kvp.Value} шт.");
+                            Console.WriteLine($"{detail.Name}: {kvp.Value} шт.");
                         }
                     }
                 }
@@ -77,7 +75,6 @@ namespace AutoServiceGame
                 
                 if (choice == "1")
                 {
-                    // Новый клиент
                     Console.Clear();
                     
                     if (details.Count == 0)
@@ -90,12 +87,11 @@ namespace AutoServiceGame
                     var brokenDetail = details[rnd.Next(details.Count)];
                     decimal repairCost = brokenDetail.Price * 1.5m;
                     
-                    Console.WriteLine($"\n🚗 Клиент приехал!");
-                    Console.WriteLine($"🔧 Сломано: {brokenDetail.Name}");
-                    Console.WriteLine($"💰 Стоимость ремонта: {repairCost} руб.");
+                    Console.WriteLine($"\nКлиент приехал!");
+                    Console.WriteLine($"Сломано: {brokenDetail.Name}");
+                    Console.WriteLine($"Стоимость ремонта: {repairCost} руб.");
                     
-                    // Проверяем есть ли деталь на складе
-                    bool hasDetail = stock.ContainsKey(brokenDetail.ID) && stock[brokenDetail.ID] > 0;
+                    bool hasDetail = stock.ContainsKey(brokenDetail.Id) && stock[brokenDetail.Id] > 0;
                     
                     if (hasDetail)
                     {
@@ -104,93 +100,88 @@ namespace AutoServiceGame
                         
                         if (answer.ToLower() == "да")
                         {
-                            // Убираем одну деталь со склада
-                            stock[brokenDetail.ID]--;
-                            if (stock[brokenDetail.ID] == 0)
-                                stock.Remove(brokenDetail.ID);
+                            stock[brokenDetail.Id]--;
+                            if (stock[brokenDetail.Id] == 0)
+                                stock.Remove(brokenDetail.Id);
                             
-                            // Удаляем одну запись из базы (GarageDetails)
                             var toRemove = Core.Context.GarageDetails
-                                .FirstOrDefault(gd => gd.GarageID == myGarage.ID && gd.DetailsID == brokenDetail.ID);
+                                .FirstOrDefault(gd => gd.GarageId == myGarage.Id && gd.DetailsId == brokenDetail.Id);
                             
                             if (toRemove != null)
                             {
                                 Core.Context.GarageDetails.Remove(toRemove);
                             }
                             
-                            // Добавляем деньги
-                            var garageInDb = Core.Context.Garages.First(g => g.ID == myGarage.ID);
+                
+                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
                             garageInDb.Budget += (int)repairCost;
                             
                             Core.Context.SaveChanges();
                             myGarage.Budget = garageInDb.Budget;
                             
-                            Console.WriteLine($"\n✅ Ремонт выполнен! +{repairCost} руб.");
+                            Console.WriteLine($"\nРемонт выполнен! +{repairCost} руб.");
                         }
                         else
                         {
-                            // Штраф за отказ
-                            var garageInDb = Core.Context.Garages.First(g => g.ID == myGarage.ID);
+                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
                             int fine = (int)(repairCost * 0.3m);
                             garageInDb.Budget -= fine;
                             
                             Core.Context.SaveChanges();
                             myGarage.Budget = garageInDb.Budget;
                             
-                            Console.WriteLine($"\n❌ Отказ. Штраф: {fine} руб.");
+                            Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("\n❌ Нет этой детали на складе!");
+                        Console.WriteLine("\nНет детали на складе!");
                         Console.Write("\n1 - Отказать (штраф 30%)\n2 - Попробовать поставить другую (штраф 200%)\nВыбери: ");
                         
                         string opt = Console.ReadLine();
                         
                         if (opt == "1")
                         {
-                            var garageInDb = Core.Context.Garages.First(g => g.ID == myGarage.ID);
+                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
                             int fine = (int)(repairCost * 0.3m);
                             garageInDb.Budget -= fine;
                             
                             Core.Context.SaveChanges();
                             myGarage.Budget = garageInDb.Budget;
                             
-                            Console.WriteLine($"\n❌ Отказ. Штраф: {fine} руб.");
+                            Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
                         }
                         else if (opt == "2")
                         {
                             if (stock.Count > 0)
                             {
-                                // Берем первую доступную деталь
                                 var firstKey = stock.Keys.First();
                                 stock[firstKey]--;
                                 if (stock[firstKey] == 0)
                                     stock.Remove(firstKey);
                                 
-                                // Удаляем из базы
                                 var toRemove = Core.Context.GarageDetails
-                                    .FirstOrDefault(gd => gd.GarageID == myGarage.ID && gd.DetailsID == firstKey);
+                                    .FirstOrDefault(gd => gd.GarageId == myGarage.Id && gd.DetailsId == firstKey);
                                 
                                 if (toRemove != null)
                                 {
                                     Core.Context.GarageDetails.Remove(toRemove);
                                 }
                                 
-                                var garageInDb = Core.Context.Garages.First(g => g.ID == myGarage.ID);
+                                var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
                                 int penalty = (int)(repairCost * 2m);
                                 garageInDb.Budget -= penalty;
                                 
                                 Core.Context.SaveChanges();
                                 myGarage.Budget = garageInDb.Budget;
                                 
-                                var wrongDetail = details.First(d => d.ID == firstKey);
-                                Console.WriteLine($"\n💥 Поставили {wrongDetail.Name} вместо {brokenDetail.Name}");
-                                Console.WriteLine($"💸 Штраф: {penalty} руб.");
+                                var wrongDetail = details.First(d => d.Id == firstKey);
+                                Console.WriteLine($"\nПоставили {wrongDetail.Name} вместо {brokenDetail.Name}");
+                                Console.WriteLine($"Штраф: {penalty} руб.");
                             }
                             else
                             {
-                                Console.WriteLine("\n💥 На складе нет деталей вообще!");
+                                Console.WriteLine("\nНа складе нет деталей вообще!");
                             }
                         }
                     }
@@ -200,9 +191,8 @@ namespace AutoServiceGame
                 }
                 else if (choice == "2")
                 {
-                    // Магазин
                     Console.Clear();
-                    Console.WriteLine("=== МАГАЗИН ЗАПЧАСТЕЙ ===\n");
+                    Console.WriteLine("МАГАЗИН ЗАПЧАСТЕЙ\n");
                     
                     if (details.Count == 0)
                     {
@@ -213,7 +203,7 @@ namespace AutoServiceGame
                         for (int i = 0; i < details.Count; i++)
                         {
                             var detail = details[i];
-                            int inStock = stock.ContainsKey(detail.ID) ? stock[detail.ID] : 0;
+                            int inStock = stock.ContainsKey(detail.Id) ? stock[detail.Id] : 0;
                             Console.WriteLine($"{i+1} - {detail.Name} ({detail.Price} руб.) | На складе: {inStock} шт.");
                         }
                         
@@ -227,30 +217,27 @@ namespace AutoServiceGame
                             {
                                 int cost = selected.Price * qty;
                                 
-                                // Проверяем деньги
-                                var garageInDb = Core.Context.Garages.First(g => g.ID == myGarage.ID);
+                                var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
                                 
                                 if (garageInDb.Budget >= cost)
                                 {
-                                    // Добавляем детали
                                     for (int i = 0; i < qty; i++)
                                     {
-                                        var newItem = new GarageDetails
+                                        var newItem = new GarageDetail
                                         {
-                                            GarageID = myGarage.ID,
-                                            DetailsID = selected.ID
+                                            GarageId = myGarage.Id,
+                                            DetailsId = selected.Id
                                         };
                                         Core.Context.GarageDetails.Add(newItem);
                                     }
                                     
-                                    // Обновляем словарь
-                                    if (stock.ContainsKey(selected.ID))
+                                    if (stock.ContainsKey(selected.Id))
                                     {
-                                        stock[selected.ID] += qty;
+                                        stock[selected.Id] += qty;
                                     }
                                     else
                                     {
-                                        stock[selected.ID] = qty;
+                                        stock[selected.Id] = qty;
                                     }
                                     
                                     // Списываем деньги
@@ -259,11 +246,11 @@ namespace AutoServiceGame
                                     Core.Context.SaveChanges();
                                     myGarage.Budget = garageInDb.Budget;
                                     
-                                    Console.WriteLine($"\n✅ Куплено {qty} шт. за {cost} руб.");
+                                    Console.WriteLine($"\nКуплено {qty} шт. за {cost} руб.");
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"\n❌ Не хватает денег! Нужно: {cost}, есть: {garageInDb.Budget}");
+                                    Console.WriteLine($"\nНе хватает денег! Нужно: {cost}, есть: {garageInDb.Budget}");
                                 }
                             }
                         }
@@ -278,7 +265,7 @@ namespace AutoServiceGame
                 }
             }
             
-            Console.WriteLine("\n👋 Игра окончена!");
+            Console.WriteLine("\nИгра окончена!");
             Console.ReadKey();
         }
     }
