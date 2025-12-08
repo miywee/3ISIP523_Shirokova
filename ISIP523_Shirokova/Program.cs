@@ -9,263 +9,364 @@ namespace AutoServiceGame
 {
     class Program
     {
+        static Garage myGarage;
+        static List<Detail> allDetails;
+        static Dictionary<int, int> stock = new Dictionary<int, int>();
+        static Random rnd = new Random();
+        
+        static List<DeliveryOrder> deliveryQueue = new List<DeliveryOrder>();
+        
+        static int customersCounter = 0;
+
         static void Main(string[] args)
         {
-            Console.WriteLine("автосервис");
-            
-            List<Detail> details = Core.Context.Details.ToList();
-            List<Garage> garages = Core.Context.Garages.ToList();
-            List<GarageDetail> garageDetails = Core.Context.GarageDetails.ToList();
-            
-            if (garages.Count == 0)
+            Console.WriteLine("АВТОСЕРВИС");
+            LoadData();
+
+            if (myGarage == null)
             {
                 Console.WriteLine("Нет данных в базе.");
                 Console.ReadKey();
                 return;
             }
             
-            var myGarage = garages[0];
-            
-            Dictionary<int, int> stock = new Dictionary<int, int>();
-            
-            foreach (var gd in garageDetails.Where(gd => gd.GarageId == myGarage.Id))
-            {
-                if (stock.ContainsKey(gd.DetailsId))
-                {
-                    stock[gd.DetailsId]++;
-                }
-                else
-                {
-                    stock[gd.DetailsId] = 1;
-                }
-            }
-            
-            Random rnd = new Random();
-            bool running = true;
-            
-            while (running)
-            {
-                Console.Clear();
-                Console.WriteLine($"бюджет: {myGarage.Budget} руб.");
-                Console.WriteLine($"гараж: {myGarage.Name}");
-                Console.WriteLine("\nсклад:");
-                
-                if (stock.Count == 0)
-                {
-                    Console.WriteLine("Пусто!");
-                }
-                else
-                {
-                    foreach (var kvp in stock)
-                    {
-                        var detail = details.FirstOrDefault(d => d.Id == kvp.Key);
-                        if (detail != null)
-                        {
-                            Console.WriteLine($"{detail.Name}: {kvp.Value} шт.");
-                        }
-                    }
-                }
-                
-                Console.WriteLine("\n1 - Новый клиент");
-                Console.WriteLine("2 - Купить запчасти");
-                Console.WriteLine("3 - Выйти");
-                Console.Write("\nВыбери: ");
-                
-                string choice = Console.ReadLine();
-                
-                if (choice == "1")
-                {
-                    Console.Clear();
-                    
-                    if (details.Count == 0)
-                    {
-                        Console.WriteLine("Нет деталей в базе!");
-                        Console.ReadKey();
-                        continue;
-                    }
-                    
-                    var brokenDetail = details[rnd.Next(details.Count)];
-                    decimal repairCost = brokenDetail.Price * 1.5m;
-                    
-                    Console.WriteLine($"\nКлиент приехал!");
-                    Console.WriteLine($"Сломано: {brokenDetail.Name}");
-                    Console.WriteLine($"Стоимость ремонта: {repairCost} руб.");
-                    
-                    bool hasDetail = stock.ContainsKey(brokenDetail.Id) && stock[brokenDetail.Id] > 0;
-                    
-                    if (hasDetail)
-                    {
-                        Console.Write("\nРемонтировать? (да/нет): ");
-                        string answer = Console.ReadLine();
-                        
-                        if (answer.ToLower() == "да")
-                        {
-                            stock[brokenDetail.Id]--;
-                            if (stock[brokenDetail.Id] == 0)
-                                stock.Remove(brokenDetail.Id);
-                            
-                            var toRemove = Core.Context.GarageDetails
-                                .FirstOrDefault(gd => gd.GarageId == myGarage.Id && gd.DetailsId == brokenDetail.Id);
-                            
-                            if (toRemove != null)
-                            {
-                                Core.Context.GarageDetails.Remove(toRemove);
-                            }
-                            
-                
-                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
-                            garageInDb.Budget += (int)repairCost;
-                            
-                            Core.Context.SaveChanges();
-                            myGarage.Budget = garageInDb.Budget;
-                            
-                            Console.WriteLine($"\nРемонт выполнен! +{repairCost} руб.");
-                        }
-                        else
-                        {
-                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
-                            int fine = (int)(repairCost * 0.3m);
-                            garageInDb.Budget -= fine;
-                            
-                            Core.Context.SaveChanges();
-                            myGarage.Budget = garageInDb.Budget;
-                            
-                            Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nНет детали на складе!");
-                        Console.Write("\n1 - Отказать (штраф 30%)\n2 - Попробовать поставить другую (штраф 200%)\nВыбери: ");
-                        
-                        string opt = Console.ReadLine();
-                        
-                        if (opt == "1")
-                        {
-                            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
-                            int fine = (int)(repairCost * 0.3m);
-                            garageInDb.Budget -= fine;
-                            
-                            Core.Context.SaveChanges();
-                            myGarage.Budget = garageInDb.Budget;
-                            
-                            Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
-                        }
-                        else if (opt == "2")
-                        {
-                            if (stock.Count > 0)
-                            {
-                                var firstKey = stock.Keys.First();
-                                stock[firstKey]--;
-                                if (stock[firstKey] == 0)
-                                    stock.Remove(firstKey);
-                                
-                                var toRemove = Core.Context.GarageDetails
-                                    .FirstOrDefault(gd => gd.GarageId == myGarage.Id && gd.DetailsId == firstKey);
-                                
-                                if (toRemove != null)
-                                {
-                                    Core.Context.GarageDetails.Remove(toRemove);
-                                }
-                                
-                                var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
-                                int penalty = (int)(repairCost * 2m);
-                                garageInDb.Budget -= penalty;
-                                
-                                Core.Context.SaveChanges();
-                                myGarage.Budget = garageInDb.Budget;
-                                
-                                var wrongDetail = details.First(d => d.Id == firstKey);
-                                Console.WriteLine($"\nПоставили {wrongDetail.Name} вместо {brokenDetail.Name}");
-                                Console.WriteLine($"Штраф: {penalty} руб.");
-                            }
-                            else
-                            {
-                                Console.WriteLine("\nНа складе нет деталей вообще!");
-                            }
-                        }
-                    }
-                    
-                    Console.WriteLine("\nНажми любую клавишу...");
-                    Console.ReadKey();
-                }
-                else if (choice == "2")
-                {
-                    Console.Clear();
-                    Console.WriteLine("МАГАЗИН ЗАПЧАСТЕЙ\n");
-                    
-                    if (details.Count == 0)
-                    {
-                        Console.WriteLine("Нет деталей в продаже!");
-                    }
-                    else
-                    {
-                        for (int i = 0; i < details.Count; i++)
-                        {
-                            var detail = details[i];
-                            int inStock = stock.ContainsKey(detail.Id) ? stock[detail.Id] : 0;
-                            Console.WriteLine($"{i+1} - {detail.Name} ({detail.Price} руб.) | На складе: {inStock} шт.");
-                        }
-                        
-                        Console.Write("\nВыбери деталь (номер): ");
-                        if (int.TryParse(Console.ReadLine(), out int num) && num > 0 && num <= details.Count)
-                        {
-                            var selected = details[num - 1];
-                            Console.Write($"Сколько {selected.Name} купить? ");
-                            
-                            if (int.TryParse(Console.ReadLine(), out int qty) && qty > 0)
-                            {
-                                int cost = selected.Price * qty;
-                                
-                                var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
-                                
-                                if (garageInDb.Budget >= cost)
-                                {
-                                    for (int i = 0; i < qty; i++)
-                                    {
-                                        var newItem = new GarageDetail
-                                        {
-                                            GarageId = myGarage.Id,
-                                            DetailsId = selected.Id
-                                        };
-                                        Core.Context.GarageDetails.Add(newItem);
-                                    }
-                                    
-                                    if (stock.ContainsKey(selected.Id))
-                                    {
-                                        stock[selected.Id] += qty;
-                                    }
-                                    else
-                                    {
-                                        stock[selected.Id] = qty;
-                                    }
-                                    
-                                    // Списываем деньги
-                                    garageInDb.Budget -= cost;
-                                    
-                                    Core.Context.SaveChanges();
-                                    myGarage.Budget = garageInDb.Budget;
-                                    
-                                    Console.WriteLine($"\nКуплено {qty} шт. за {cost} руб.");
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"\nНе хватает денег! Нужно: {cost}, есть: {garageInDb.Budget}");
-                                }
-                            }
-                        }
-                    }
-                    
-                    Console.WriteLine("\nНажми любую клавишу...");
-                    Console.ReadKey();
-                }
-                else if (choice == "3")
-                {
-                    running = false;
-                }
-            }
-            
+            LoadStock();
+            Game();
+
             Console.WriteLine("\nИгра окончена!");
+            Console.ReadKey();
+        }
+        
+        class DeliveryOrder
+        {
+            public int DetailId { get; set; }
+            public int Quantity { get; set; }
+            public int DeliveryIn { get; set; } 
+        }
+        
+        static void LoadData()
+        {
+            allDetails = Core.Context.Details.ToList();
+            var garages = Core.Context.Garages.ToList();
+            
+            if (garages.Count > 0)
+                myGarage = garages[0];
+        }
+        
+        static void LoadStock()
+        {
+            var garageDetails = Core.Context.GarageDetails.ToList();
+            
+            foreach (var item in garageDetails)
+            {
+                if (item.GarageId == myGarage.Id)
+                {
+                    if (stock.ContainsKey(item.DetailsId))
+                        stock[item.DetailsId]++;
+                    else
+                        stock[item.DetailsId] = 1;
+                }
+            }
+        }
+        
+        static void Game()
+        {
+            bool playing = true;
+            while (playing)
+            {
+                ShowMenu();
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1": 
+                        NewCustomer(); 
+                        customersCounter++;
+                        CheckDeliveries();
+                        break;
+                    case "2": 
+                        BuyDetails(); 
+                        break;
+                    case "3": 
+                        playing = false; 
+                        break;
+                }
+            }
+        }
+        
+        static void CheckDeliveries()
+        {
+            for (int i = deliveryQueue.Count - 1; i >= 0; i--)
+            {
+                deliveryQueue[i].DeliveryIn--;
+                
+                if (deliveryQueue[i].DeliveryIn <= 0)
+                {
+                    int detailId = deliveryQueue[i].DetailId;
+                    int quantity = deliveryQueue[i].Quantity;
+                    
+                    if (stock.ContainsKey(detailId))
+                        stock[detailId] += quantity;
+                    else
+                        stock[detailId] = quantity;
+                    
+                    for (int j = 0; j < quantity; j++)
+                    {
+                        Core.Context.GarageDetails.Add(new GarageDetail
+                        {
+                            GarageId = myGarage.Id,
+                            DetailsId = detailId
+                        });
+                    }
+                    
+                    var detail = allDetails.First(d => d.Id == detailId);
+                    Console.WriteLine($"\n[доставка] Получено {quantity} шт. '{detail.Name}'");
+
+                    deliveryQueue.RemoveAt(i);
+                }
+            }
+            
+            Core.Context.SaveChanges();
+        }
+        
+        static void ShowMenu()
+        {
+            Console.Clear();
+            Console.WriteLine($"АВТОСЕРВИС");
+            Console.WriteLine($"Бюджет: {myGarage.Budget} руб.");
+            Console.WriteLine($"Гараж: {myGarage.Name}");
+            
+            Console.WriteLine("\nСКЛАД");
+            ShowStock();
+            
+            if (deliveryQueue.Count > 0)
+            {
+                Console.WriteLine("\nОЖИДАЮТСЯ ДОСТАВКИ");
+                foreach (var order in deliveryQueue)
+                {
+                    var detail = allDetails.First(d => d.Id == order.DetailId);
+                    Console.WriteLine($"{detail.Name}: {order.Quantity} шт. (через {order.DeliveryIn} клиента(ов))");
+                }
+            }
+            
+            Console.WriteLine($"\nКлиентов с последней доставки: {customersCounter}");
+            
+            Console.WriteLine("\nМЕНЮ");
+            Console.WriteLine("1 - Новый клиент");
+            Console.WriteLine("2 - Купить запчасти");
+            Console.WriteLine("3 - Выйти");
+            Console.Write("\nВыберите действие: ");
+        }
+        
+        static void ShowStock()
+        {
+            if (stock.Count == 0)
+            {
+                Console.WriteLine("Пусто!");
+                return;
+            }
+
+            foreach (var item in stock)
+            {
+                var detail = allDetails.FirstOrDefault(d => d.Id == item.Key);
+                if (detail != null)
+                    Console.WriteLine($"{detail.Name}: {item.Value} шт.");
+            }
+        }
+        
+        static void NewCustomer()
+        {
+            Console.Clear();
+
+            if (allDetails.Count == 0)
+            {
+                Console.WriteLine("Нет деталей в базе!");
+                WaitForKey();
+                return;
+            }
+            
+            var brokenDetail = allDetails[rnd.Next(allDetails.Count)];
+            decimal repairCost = brokenDetail.Price * 1.5m;
+
+            Console.WriteLine("НОВЫЙ КЛИЕНТ");
+            Console.WriteLine($"Сломано: {brokenDetail.Name}");
+            Console.WriteLine($"Стоимость ремонта: {repairCost} руб.");
+            
+            bool hasDetail = stock.ContainsKey(brokenDetail.Id) && stock[brokenDetail.Id] > 0;
+
+            if (hasDetail)
+            {
+                HandleRepair(brokenDetail, repairCost);
+            }
+            else
+            {
+                HandleNoDetail(brokenDetail, repairCost);
+            }
+
+            WaitForKey();
+        }
+        
+        static void HandleRepair(Detail brokenDetail, decimal repairCost)
+        {
+            Console.Write("\nРемонтировать? (у/т): ");
+            string answer = Console.ReadLine();
+
+            if (answer.ToLower() == "у")
+            {
+                UseDetail(brokenDetail.Id);
+                
+                UpdateBudget((int)repairCost, true);
+                Console.WriteLine($"\nРемонт выполнен! +{repairCost} руб.");
+            }
+            else
+            {
+                int fine = (int)(repairCost * 0.3m);
+                UpdateBudget(fine, false);
+                Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
+            }
+        }
+        
+        static void HandleNoDetail(Detail brokenDetail, decimal repairCost)
+        {
+            Console.WriteLine("\nНужной детали нет на складе!");
+            Console.WriteLine("1 - Отказать (штраф 30%)");
+            Console.WriteLine("2 - Поставить другую (штраф 200%)");
+            Console.Write("Выберите: ");
+
+            string choice = Console.ReadLine();
+
+            if (choice == "1")
+            {
+                int fine = (int)(repairCost * 0.3m);
+                UpdateBudget(fine, false);
+                Console.WriteLine($"\nОтказ. Штраф: {fine} руб.");
+            }
+            else if (choice == "2")
+            {
+                if (stock.Count > 0)
+                {
+                    int wrongDetailId = stock.Keys.First();
+                    var wrongDetail = allDetails.First(d => d.Id == wrongDetailId);
+                    
+                    UseDetail(wrongDetailId);
+                    
+                    int penalty = (int)(repairCost * 2m);
+                    UpdateBudget(penalty, false);
+                    
+                    Console.WriteLine($"\nПоставили {wrongDetail.Name} вместо {brokenDetail.Name}");
+                    Console.WriteLine($"Штраф: {penalty} руб.");
+                }
+                else
+                {
+                    Console.WriteLine("\nНа складе совсем нет деталей!");
+                }
+            }
+        }
+
+        static void BuyDetails()
+        {
+            Console.Clear();
+            Console.WriteLine("МАГАЗИН");
+            Console.WriteLine("Детали придут через 2 клиента!\n");
+
+            if (allDetails.Count == 0)
+            {
+                Console.WriteLine("Нет деталей в продаже!");
+                WaitForKey();
+                return;
+            }
+            
+            ShowCatalog();
+
+            Console.Write("\nВыберите деталь (номер): ");
+            if (!int.TryParse(Console.ReadLine(), out int detailNum))
+            {
+                Console.WriteLine("Введите число");
+                WaitForKey();
+                return;
+            }
+
+            var selectedDetail = allDetails[detailNum - 1];
+
+            Console.Write($"Сколько '{selectedDetail.Name}' купить? ");
+            if (!int.TryParse(Console.ReadLine(), out int quantity) || quantity <= 0)
+            {
+                Console.WriteLine("Неправильное количество!");
+                WaitForKey();
+                return;
+            }
+            
+            int totalCost = selectedDetail.Price * quantity;
+            
+            if (myGarage.Budget < totalCost)
+            {
+                Console.WriteLine($"\nНе хватает денег! Нужно: {totalCost} руб., есть: {myGarage.Budget} руб.");
+                WaitForKey();
+                return;
+            }
+            
+            BuyDetail(selectedDetail, quantity, totalCost);
+            WaitForKey();
+        }
+        
+        static void ShowCatalog()
+        {
+            for (int i = 0; i < allDetails.Count; i++)
+            {
+                var detail = allDetails[i];
+                int inStock = stock.ContainsKey(detail.Id) ? stock[detail.Id] : 0;
+                Console.WriteLine($"{i + 1}. {detail.Name} - {detail.Price} руб. (на складе: {inStock} шт.)");
+            }
+        }
+        
+        static void BuyDetail(Detail detail, int quantity, int totalCost)
+        {
+            UpdateBudget(totalCost, false);
+            
+            var order = new DeliveryOrder
+            {
+                DetailId = detail.Id,
+                Quantity = quantity,
+                DeliveryIn = 2  
+            };
+            
+            deliveryQueue.Add(order);
+            
+            Console.WriteLine($"\nЗаказано {quantity} шт. '{detail.Name}' за {totalCost} руб.");
+            Console.WriteLine($"Детали придут через 2 клиента!");
+        }
+        
+        static void UseDetail(int detailId)
+        {
+            stock[detailId]--;
+            if (stock[detailId] == 0)
+                stock.Remove(detailId);
+            
+            var itemToRemove = Core.Context.GarageDetails
+                .FirstOrDefault(gd => gd.GarageId == myGarage.Id && gd.DetailsId == detailId);
+            
+            if (itemToRemove != null)
+                Core.Context.GarageDetails.Remove(itemToRemove);
+
+            Core.Context.SaveChanges();
+        }
+        
+        static void UpdateBudget(int amount, bool isIncome)
+        {
+            var garageInDb = Core.Context.Garages.First(g => g.Id == myGarage.Id);
+            
+            if (isIncome)
+                garageInDb.Budget += amount;
+            else
+                garageInDb.Budget -= amount; 
+
+            Core.Context.SaveChanges();
+            myGarage.Budget = garageInDb.Budget;
+        }
+        
+        static void WaitForKey()
+        {
+            Console.WriteLine("\nНажмите любую клавишу...");
             Console.ReadKey();
         }
     }
