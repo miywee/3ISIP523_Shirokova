@@ -35,6 +35,7 @@ namespace AutoServiceGame
 
             Console.WriteLine("\nИгра окончена!");
             Console.ReadKey();
+            
         }
         
         class DeliveryOrder
@@ -208,10 +209,10 @@ namespace AutoServiceGame
         
         static void HandleRepair(Detail brokenDetail, decimal repairCost)
         {
-            Console.Write("\nРемонтировать? (у/т): ");
+            Console.Write("\nРемонтировать? (y/n): ");
             string answer = Console.ReadLine();
 
-            if (answer.ToLower() == "у")
+            if (answer.ToLower() == "y")
             {
                 UseDetail(brokenDetail.Id);
                 
@@ -258,7 +259,7 @@ namespace AutoServiceGame
                 }
                 else
                 {
-                    Console.WriteLine("\nНа складе совсем нет деталей!");
+                    Console.WriteLine("\nНа складе нет деталей!");
                 }
             }
         }
@@ -300,7 +301,7 @@ namespace AutoServiceGame
             
             if (myGarage.Budget < totalCost)
             {
-                Console.WriteLine($"\nНе хватает денег! Нужно: {totalCost} руб., есть: {myGarage.Budget} руб.");
+                Console.WriteLine($"\nНе хватает денег!");
                 WaitForKey();
                 return;
             }
